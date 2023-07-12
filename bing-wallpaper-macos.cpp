@@ -27,7 +27,7 @@ const string ConfigDir = string(getenv("HOME")) + "/.config/bing-wallpaper-macos
 const string DownloadDir = string(getenv("HOME")) + "/.local/bing-wallpaper-macos/";
 const string ConfigName = "config.json";
 const string CheckNetworkUrl = "https://cn.bing.com";
-const string WallpaperJsonUrl = "https://cn.bing.com/HPImageArchive.aspx?format=js&n=1&idx=0";
+const string WallpaperJsonUrl = CheckNetworkUrl + "/HPImageArchive.aspx?format=js&n=1&idx=0";
 
 // Callback functions
 size_t WriteCallback(void* contents, size_t size, size_t nmemb, string* data) {
@@ -229,10 +229,11 @@ int main(int argc, char* argv[]) {
         } else if (arg == "--version") {
             printVersion();
             return 0;
+        } else {
+            cout << "bing-wallpaper-macos: option " << argv[1] << " is unknown.\n"
+                 << "bing-wallpaper-macos: try 'bing-wallpaper-macos --help' for more information.\n";
+            return 1;
         }
-        cout << "bing-wallpaper-macos: option " << argv[1] << " is unknown.\n"
-             << "bing-wallpaper-macos: try 'bing-wallpaper-macos --help' for more information.\n";
-        return 1;
     }
 
     if (!checkNetworkConnection(CheckNetworkUrl)) {
