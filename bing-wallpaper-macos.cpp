@@ -10,6 +10,7 @@ using json = nlohmann::json;
 // Function declarations
 void printHelp();
 void printVersion();
+void printUnknown(const string& arg);
 string getYesterdayDate();
 bool check_run_today(const string& configPath);
 bool checkNetworkConnection(const string& url);
@@ -17,14 +18,15 @@ string getJsonContent(const string& url);
 string replaceAndAddPrefix(const string& url, const string& target, const string& replacement, const string& prefix);
 string getTemporaryFilePath();
 void clearDirectory(const string& path);
-string downloadFile(const string& url, const string& filename);
+string downloadFile(const string& url, const string& filedir, const string& filename);
 bool runAppleScript(const string& script);
 void updateConfig(const string& configDir, const string& configName);
 
 // Constants
-const string ProgramVersion = "0.0.2";
-const string ConfigDir = string(getenv("HOME")) + "/.config/bing-wallpaper-macos/";
-const string DownloadDir = string(getenv("HOME")) + "/.local/bing-wallpaper-macos/";
+const string ProgramName = "bing-wallpaper-macos";
+const string ProgramVersion = "0.0.3";
+const string ConfigDir = string(getenv("HOME")) + "/.config/" + ProgramName + "/";
+const string DownloadDir = string(getenv("HOME")) + "/.local/" + ProgramName + "/";
 const string ConfigName = "config.json";
 const string CheckNetworkUrl = "https://cn.bing.com";
 const string WallpaperJsonUrl = CheckNetworkUrl + "/HPImageArchive.aspx?format=js&n=1&idx=0";
@@ -36,9 +38,62 @@ size_t WriteCallback(void* contents, size_t size, size_t nmemb, string* data) {
     return totalSize;
 }
 
+// Main function
+int main(int argc, char* argv[]) {
+    if (argc > 1) {
+        string arg(argv[1]);
+        if (arg == "--auto") {
+            if (check_run_today(ConfigDir + ConfigName)) {
+                return 0;
+            }
+        } else if (arg == "--help") {
+            printHelp();
+            return 0;
+        } else if (arg == "--version") {
+            printVersion();
+            return 0;
+        } else {
+            printUnknown(arg);
+            return 1;
+        }
+    }
+
+    if (!checkNetworkConnection(CheckNetworkUrl)) {
+        cerr << "Failed to connect to destination URL" << endl;
+        return 0;
+    }
+
+    string wallpaperJsonContent = getJsonContent(WallpaperJsonUrl);
+    json wallpaperjsonData = json::parse(wallpaperJsonContent);
+    string wallpaperUrl = wallpaperjsonData["images"][0]["url"];
+    string modifiedUrl = replaceAndAddPrefix(wallpaperUrl, "1920x1080", "UHD", "https://cn.bing.com");
+    string fileName = (string)wallpaperjsonData["images"][0]["startdate"] + "_" + (string)wallpaperjsonData["images"][0]["title"] + ".jpg";
+    string downloadedFilePath = downloadFile(modifiedUrl, DownloadDir, fileName);
+    if (!downloadedFilePath.empty()) {
+        // cout << "file download complete" << endl;
+    } else {
+        cerr << "Failed to download wallpaper" << endl;
+        return 0;
+    }
+
+    string script = "tell application \"System Events\" to tell every desktop to set picture to \"" + downloadedFilePath + "\"";
+    int result = runAppleScript(script);
+    if (result) {
+        cout << "\033[0m[\033[33m" << getYesterdayDate() << "\033[0m] "
+             << "\033[35mWallpaper applied successfully :)" << endl;
+    } else {
+        cerr << "Failed to apply wallpaper" << endl;
+        return 0;
+    }
+
+    updateConfig(ConfigDir, ConfigName);
+
+    return 0;
+}
+
 // Utility functions
 void printHelp() {
-    cout << "Usage: bing-wallpaper-macos [options]\n"
+    cout << "Usage: " << ProgramName << " [options]\n"
          << "Options:\n"
          << "  --auto     : Check if program run today\n"
          << "  --version  : Display program version\n"
@@ -47,6 +102,11 @@ void printHelp() {
 
 void printVersion() {
     cout << "Program version: " << ProgramVersion << endl;
+}
+
+void printUnknown(const string& arg) {
+    cout << ProgramName + ": option " << arg << " is unknown.\n"
+         << ProgramName + ": try '" + ProgramName + " --help' for more information.\n";
 }
 
 string getYesterdayDate() {
@@ -213,58 +273,4 @@ void updateConfig(const string& configDir, const string& configName) {
     } else {
         cerr << "Failed to open file" << endl;
     }
-}
-
-// Main function
-int main(int argc, char* argv[]) {
-    if (argc > 1) {
-        string arg(argv[1]);
-        if (arg == "--auto") {
-            if (check_run_today(ConfigDir + ConfigName)) {
-                return 0;
-            }
-        } else if (arg == "--help") {
-            printHelp();
-            return 0;
-        } else if (arg == "--version") {
-            printVersion();
-            return 0;
-        } else {
-            cout << "bing-wallpaper-macos: option " << argv[1] << " is unknown.\n"
-                 << "bing-wallpaper-macos: try 'bing-wallpaper-macos --help' for more information.\n";
-            return 1;
-        }
-    }
-
-    if (!checkNetworkConnection(CheckNetworkUrl)) {
-        cerr << "Failed to connect to destination URL" << endl;
-        return 0;
-    }
-
-    string wallpaperJsonContent = getJsonContent(WallpaperJsonUrl);
-    json wallpaperjsonData = json::parse(wallpaperJsonContent);
-    string wallpaperUrl = wallpaperjsonData["images"][0]["url"];
-    string modifiedUrl = replaceAndAddPrefix(wallpaperUrl, "1920x1080", "UHD", "https://cn.bing.com");
-    string fileName = (string)wallpaperjsonData["images"][0]["startdate"] + "_" + (string)wallpaperjsonData["images"][0]["title"] + ".jpg";
-    string downloadedFilePath = downloadFile(modifiedUrl, DownloadDir, fileName);
-    if (!downloadedFilePath.empty()) {
-        // cout << "file download complete" << endl;
-    } else {
-        cerr << "Failed to download wallpaper" << endl;
-        return 0;
-    }
-
-    string script = "tell application \"System Events\" to tell every desktop to set picture to \"" + downloadedFilePath + "\"";
-    int result = runAppleScript(script);
-    if (result) {
-        cout << "\033[0m[\033[33m" << getYesterdayDate() << "\033[0m] "
-             << "\033[35mWallpaper applied successfully :)" << endl;
-    } else {
-        cerr << "Failed to apply wallpaper" << endl;
-        return 0;
-    }
-
-    updateConfig(ConfigDir, ConfigName);
-
-    return 0;
 }
