@@ -60,7 +60,7 @@ int main(int argc, char* argv[]) {
 
     if (!checkNetworkConnection(CheckNetworkUrl)) {
         cerr << "Failed to connect to destination URL" << endl;
-        return 0;
+        return 1;
     }
 
     string wallpaperJsonContent = getJsonContent(WallpaperJsonUrl);
@@ -73,7 +73,7 @@ int main(int argc, char* argv[]) {
         // cout << "file download complete" << endl;
     } else {
         cerr << "Failed to download wallpaper" << endl;
-        return 0;
+        return 1;
     }
 
     string script = "tell application \"System Events\" to tell every desktop to set picture to \"" + downloadedFilePath + "\"";
@@ -81,12 +81,11 @@ int main(int argc, char* argv[]) {
     if (result) {
         cout << "\033[0m[\033[33m" << getYesterdayDate() << "\033[0m] "
              << "\033[35mWallpaper applied successfully :)" << endl;
+        updateConfig(ConfigDir, ConfigName);
     } else {
         cerr << "Failed to apply wallpaper" << endl;
-        return 0;
+        return 1;
     }
-
-    updateConfig(ConfigDir, ConfigName);
 
     return 0;
 }
