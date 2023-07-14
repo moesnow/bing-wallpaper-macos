@@ -19,7 +19,7 @@ string replaceAndAddPrefix(const string& url, const string& target, const string
 string getTemporaryFilePath();
 void clearDirectory(const string& path);
 string downloadFile(const string& url, const string& filedir, const string& filename);
-bool runAppleScript(const string& script);
+bool runCommand(const string& script);
 void updateConfig(const string& configDir, const string& configName);
 
 // Constants
@@ -69,23 +69,23 @@ int main(int argc, char* argv[]) {
     string modifiedUrl = replaceAndAddPrefix(wallpaperUrl, "1920x1080", "UHD", "https://cn.bing.com");
     string fileName = (string)wallpaperjsonData["images"][0]["startdate"] + "_" + (string)wallpaperjsonData["images"][0]["title"] + ".jpg";
     string downloadedFilePath = downloadFile(modifiedUrl, DownloadDir, fileName);
-    if (!downloadedFilePath.empty()) {
-        // cout << "file download complete" << endl;
-    } else {
+    if (downloadedFilePath.empty()) {
         cerr << "Failed to download wallpaper" << endl;
         return 1;
     }
 
-    string script = "tell application \"System Events\" to tell every desktop to set picture to \"" + downloadedFilePath + "\"";
-    int result = runAppleScript(script);
-    if (result) {
+    string appleScript1 = "tell application \"System Events\" to tell every desktop to set picture to \"" + downloadedFilePath + "\"";
+    string appleScript2 = "tell application \"System Events\" to if picture of item 1 of desktops does not contain \"" + downloadedFilePath + "\" then error";
+    string shellCommand = "osascript -e '" + appleScript1 + "' -e '" + appleScript2 + "'";
+    if (runCommand(shellCommand)) {
         cout << "\033[0m[\033[33m" << getYesterdayDate() << "\033[0m] "
              << "\033[35mWallpaper applied successfully :)" << endl;
-        updateConfig(ConfigDir, ConfigName);
     } else {
         cerr << "Failed to apply wallpaper" << endl;
         return 1;
     }
+
+    updateConfig(ConfigDir, ConfigName);
 
     return 0;
 }
@@ -250,8 +250,7 @@ string downloadFile(const string& url, const string& filedir, const string& file
     return FilePath;
 }
 
-bool runAppleScript(const string& script) {
-    string command = "osascript -e '" + script + "'";
+bool runCommand(const string& command) {
     int result = system(command.c_str());
     return !result;
 }
@@ -268,7 +267,6 @@ void updateConfig(const string& configDir, const string& configName) {
     if (file.is_open()) {
         file << jsonData.dump(4);
         file.close();
-        // cout << "JSON data written to file" << endl;
     } else {
         cerr << "Failed to open file" << endl;
     }
