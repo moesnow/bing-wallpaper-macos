@@ -221,7 +221,7 @@ bool downloadFile(const string& url, const path& filepath) {
         // cout << "file exists, skip download" << endl;
         return false;
     } else {
-        clearDirectory(filepath);
+        clearDirectory(filepath.parent_path());
     }
 
     CURL* curl = curl_easy_init();
