@@ -8,7 +8,7 @@
 
 Bing 壁纸会被下载到 `~/.local/bing-wallpaper-macos` 目录内
 
-并在 `~/.config/bing-wallpaper-macos` 目录内记录上次更新日期
+并在 `~/.local/bing-wallpaper-macos` 目录内记录上次更新日期
 
 更新壁纸时会先删除目录内的旧壁纸文件
 

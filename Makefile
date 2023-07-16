@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -Wall -Werror -std=c++11
+CFLAGS = -Wall -Werror -std=c++17
 LIBS = -lcurl
 
 TARGET = bing-wallpaper-macos
