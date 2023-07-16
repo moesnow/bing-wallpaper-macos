@@ -25,7 +25,7 @@ void updateConfig(const path& configpath);
 
 // Constants
 const string ProgramName = "bing-wallpaper-macos";
-const string ProgramVersion = "0.0.5";
+const string ProgramVersion = "0.0.6";
 const path ProgramDir = string(getenv("HOME")) + "/.local/" + ProgramName + "/";
 const string ConfigName = "config.json";
 const string CheckNetworkUrl = "https://cn.bing.com";
