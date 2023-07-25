@@ -1,18 +1,18 @@
 # bing-wallpaper-macos
 
-**English** | [中文](./README_CN.md)
+**中文** | [English](./README_EN.md)
 
-Automatically update Bing wallpapers on macOS, with support for multiple monitors.
+在 macOS 上每天自动更新 Bing 壁纸，支持多显示器
 
-## Principle
+## 原理
 
-Bing wallpapers are downloaded to the `~/.local/bing-wallpaper-macos` directory.
+Bing 壁纸会被下载到 `~/.local/bing-wallpaper-macos` 目录内
 
-The last update date is recorded in the `~/.local/bing-wallpaper-macos` directory.
+并在 `~/.local/bing-wallpaper-macos` 目录内记录上次更新日期
 
-When updating wallpapers, the old wallpaper files in the directory will be removed.
+更新壁纸时会先删除目录内的旧壁纸文件
 
-## Installation
+## 安装
 
 ### Homebrew
 
@@ -21,21 +21,21 @@ brew tap moesnow/tools
 brew install bing-wallpaper-macos
 ```
 
-## Usage
+## 使用
 
-### Automatically update wallpapers
+### 自动更新壁纸
 
 ```zsh
 brew services start bing-wallpaper-macos
 ```
 
-### Manually update wallpapers
+### 手动更新壁纸
 
 ```zsh
 bing-wallpaper-macos
 ```
 
-### Optional parameters
+### 可选参数
 
 ```zsh
 Usage: bing-wallpaper-macos [options]
@@ -45,7 +45,7 @@ Options:
   --help     : Display this help message
 ```
 
-## Compilation
+## 编译
 
 ```zsh
 brew install nlohmann-json
