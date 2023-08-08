@@ -2,15 +2,15 @@
 
 **中文** | [English](./README_EN.md)
 
-在 macOS 上每天自动更新 Bing 壁纸，支持多显示器
+在 macOS 上每天自动更新 Bing 壁纸，支持多显示器。
 
 ## 原理
 
-Bing 壁纸会被下载到 `~/.local/bing-wallpaper-macos` 目录内
+Bing 壁纸会被下载到 `~/.local/bing-wallpaper-macos` 目录内，
 
-并在 `~/.local/bing-wallpaper-macos` 目录内记录上次更新日期
+并在 `~/.local/bing-wallpaper-macos` 目录内记录上次更新日期，
 
-更新壁纸时会先删除目录内的旧壁纸文件
+目录内超过30天的旧壁纸文件会被删除。
 
 ## 安装
 

@@ -10,7 +10,7 @@ Bing wallpapers are downloaded to the `~/.local/bing-wallpaper-macos` directory.
 
 The last update date is recorded in the `~/.local/bing-wallpaper-macos` directory.
 
-When updating wallpapers, the old wallpaper files in the directory will be removed.
+The old wallpaper files in the directory that are older than 30 days will be removed.
 
 ## Installation
 
