@@ -139,17 +139,15 @@ json getConfig(const path configPath) {
 
 bool checkNeedRun(const json configJson) {
     bool isDateExpired = getDate() == configJson["last_update_date"] ? false : true;
-
     bool isWallpaperChange = false;
     string wallpaperName = configJson["wallpaper_name"];
-    const vector<Screen> screens = Wallpaper::get();
-    for (const auto& screen : screens) {
-        if (screen.path.find(wallpaperName) == std::string::npos) {
+    const vector<Wallpaper> wallpapers = Wallpaper::get();
+    for (const auto& wallpaper : wallpapers) {
+        if (wallpaper.getPath().find(wallpaperName) == std::string::npos) {
             isWallpaperChange = true;
             break;
         }
     }
-
     return isDateExpired || isWallpaperChange ? true : false;
 }
 

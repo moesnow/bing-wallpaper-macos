@@ -1,6 +1,6 @@
 #include <wallpaper.h>
 
-RunResult runShellCommand(const std::string& command) {
+RunResult Wallpaper::runShellCommand(const std::string& command) {
     RunResult result;
     result.ok = false;
     result.text = "";
@@ -23,7 +23,7 @@ RunResult runShellCommand(const std::string& command) {
     return result;
 }
 
-RunResult runAppleScript(const std::vector<std::string>& applescripts) {
+RunResult Wallpaper::runAppleScript(const std::vector<std::string>& applescripts) {
     std::string command = "";
     for (std::string script : applescripts) {
         command += " -e '" + script + "'";
@@ -32,7 +32,7 @@ RunResult runAppleScript(const std::vector<std::string>& applescripts) {
     return runShellCommand(command);
 }
 
-void clearDirectory(const fs::path& filepath) {
+void Wallpaper::clearDirectory(const fs::path& filepath) {
     std::vector<fs::path> jpgFiles;
     for (const auto& entry : fs::directory_iterator(filepath)) {
         if (entry.is_regular_file() && entry.path().extension() == ".jpg") {
@@ -51,14 +51,7 @@ void clearDirectory(const fs::path& filepath) {
     }
 }
 
-// Callback functions
-size_t downloadWriteCallback(void* contents, size_t size, size_t nmemb, std::string* data) {
-    size_t totalSize = size * nmemb;
-    data->append(static_cast<char*>(contents), totalSize);
-    return totalSize;
-}
-
-bool downloadFile(const std::string& url, const fs::path& filepath) {
+bool Wallpaper::downloadFile(const std::string& url, const fs::path& filepath) {
     create_directories(filepath.parent_path());
     std::ifstream file(filepath);
     if (file.good()) {
@@ -91,4 +84,54 @@ bool downloadFile(const std::string& url, const fs::path& filepath) {
     }
 
     return true;
+}
+
+size_t Wallpaper::downloadWriteCallback(void* contents, size_t size, size_t nmemb, std::string* data) {
+    size_t totalSize = size * nmemb;
+    data->append(static_cast<char*>(contents), totalSize);
+    return totalSize;
+}
+
+std::vector<Wallpaper> Wallpaper::get() {
+    std::string appleScript = R"delimiter(tell application "System Events"
+    set outputText to "{"
+    set isFirstDesktop to true
+    repeat with current_desktop in desktops
+        if isFirstDesktop then
+            set outputText to outputText & "\"" & name of current_desktop & "\"" & ":" & "\"" & picture of current_desktop & "\""
+            set isFirstDesktop to false
+        else
+            set outputText to outputText & "," & "\"" & name of current_desktop & "\"" & ":" & "\"" & picture of current_desktop & "\""
+        end if	
+    end repeat
+    set outputText to outputText & "}"
+end tell
+return outputText)delimiter";
+    RunResult result = runAppleScript({appleScript});
+    std::vector<Wallpaper> wallpapers = {};
+    if (result.ok) {
+        json jsonData = json::parse(result.text);
+        for (auto it = jsonData.begin(); it != jsonData.end(); ++it) {
+            wallpapers.emplace_back(it.key(), it.value());
+        }
+    }
+    return wallpapers;
+}
+
+bool Wallpaper::set(const std::string url, const fs::path path) {
+    if (!downloadFile(url, path)) {
+        std::cerr << "Failed to download wallpaper" << std::endl;
+        return false;
+    }
+    std::string appleScript1 = "tell application \"System Events\" to tell every desktop to set picture to \"" + path.string() + "\"";
+    std::string appleScript2 = "tell application \"System Events\" to if picture of item 1 of desktops does not contain \"" + path.string() + "\" then error";
+    return runAppleScript({appleScript1, appleScript2}).ok;
+}
+
+std::string Wallpaper::getName() const {
+    return name;
+}
+
+std::string Wallpaper::getPath() const {
+    return path;
 }

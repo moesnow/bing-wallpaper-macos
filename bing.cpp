@@ -89,10 +89,10 @@ Bing::Bing(const std::string countrycode) {
     name = (std::string)wallpaperjsonData["images"][0]["startdate"] + "_" + picturTitle + ".jpg";
 }
 
-std::string Bing::getName() {
+std::string Bing::getName() const {
     return name;
 }
 
-std::string Bing::getUrl() {
+std::string Bing::getUrl() const {
     return url;
 }
