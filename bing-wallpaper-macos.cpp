@@ -53,16 +53,16 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    Pictures wallpaper = Bing::getPicture(config["country_code"]);
+    Bing bing(config["country_code"]);
 
-    if (Wallpaper::set(wallpaper.url, ProgramDir / wallpaper.name)) {
+    if (Wallpaper::set(bing.getUrl(), ProgramDir / bing.getName())) {
         printSuccess(getDate());
     } else {
         cerr << "Failed to apply wallpaper" << endl;
         return 1;
     }
 
-    config["wallpaper_name"] = wallpaper.name;
+    config["wallpaper_name"] = bing.getName();
     config["last_update_date"] = getDate();
     updateConfig(ProgramDir / ConfigName, config);
 

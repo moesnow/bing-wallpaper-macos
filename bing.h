@@ -8,35 +8,22 @@
 
 using json = nlohmann::json;
 
-const std::string BingHost = "https://www.bing.com";
-const std::string BingPath = "/HPImageArchive.aspx?format=js&n=1&idx=0";
-
-bool checkNetworkConnection(const std::string& url);
-std::string getJsonContent(const std::string& url);
-std::string replaceAndAddPrefix(const std::string& url, const std::string& target, const std::string& replacement, const std::string& prefix);
-
-struct Pictures {
+class Bing {
+   private:
     std::string name;
     std::string url;
-};
+    static bool checkNetworkConnection(const std::string& url);
+    std::string getJsonContent(const std::string& url);
+    std::string replaceAndAddPrefix(const std::string& url, const std::string& target, const std::string& replacement, const std::string& prefix);
+    size_t getWriteCallback(void* contents, size_t size, size_t nmemb, std::string* data);
 
-struct Bing {
-    static bool checkConnection(const std::string countrycode) {
-        std::string host = countrycode == "zh-cn" ? "https://cn.bing.com" : BingHost;
-        return checkNetworkConnection(host);
-    }
-    static Pictures getPicture(const std::string countrycode) {
-        std::string host = countrycode == "zh-cn" ? "https://cn.bing.com" : BingHost;
-        Pictures picture;
-        std::string wallpaperJsonContent = getJsonContent(host + BingPath + "&mkt=" + countrycode);
-        json wallpaperjsonData = json::parse(wallpaperJsonContent);
-        std::string wallpaperUrl = wallpaperjsonData["images"][0]["url"];
-        picture.url = replaceAndAddPrefix(wallpaperUrl, "1920x1080", "UHD", host);
-        std::string picturTitle = (std::string)wallpaperjsonData["images"][0]["title"];
-        picturTitle.erase(std::remove(picturTitle.begin(), picturTitle.end(), '/'), picturTitle.end());
-        picture.name = (std::string)wallpaperjsonData["images"][0]["startdate"] + "_" + picturTitle + ".jpg";
-        return picture;
-    }
+   public:
+    static const std::string BingHost;
+    static const std::string BingPath;
+    static bool checkConnection(const std::string countrycode);
+    Bing(const std::string countrycode);
+    std::string getName();
+    std::string getUrl();
 };
 
 #endif
