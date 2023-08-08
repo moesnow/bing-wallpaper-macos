@@ -32,7 +32,9 @@ struct Bing {
         json wallpaperjsonData = json::parse(wallpaperJsonContent);
         std::string wallpaperUrl = wallpaperjsonData["images"][0]["url"];
         picture.url = replaceAndAddPrefix(wallpaperUrl, "1920x1080", "UHD", host);
-        picture.name = (std::string)wallpaperjsonData["images"][0]["startdate"] + "_" + (std::string)wallpaperjsonData["images"][0]["title"] + ".jpg";
+        std::string picturTitle = (std::string)wallpaperjsonData["images"][0]["title"];
+        picturTitle.erase(std::remove(picturTitle.begin(), picturTitle.end(), '/'), picturTitle.end());
+        picture.name = (std::string)wallpaperjsonData["images"][0]["startdate"] + "_" + picturTitle + ".jpg";
         return picture;
     }
 };
