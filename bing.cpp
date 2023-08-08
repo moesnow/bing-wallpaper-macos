@@ -43,13 +43,14 @@ std::string Bing::getJsonContent(const std::string& url) {
     curl = curl_easy_init();
     if (curl) {
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, Bing::checkConnection);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, getWriteCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &content);
 
         res = curl_easy_perform(curl);
 
         if (res != CURLE_OK) {
             std::cerr << "HTTP request error: " << curl_easy_strerror(res) << std::endl;
+            exit(1);
         }
 
         curl_easy_cleanup(curl);
