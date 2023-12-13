@@ -29,8 +29,8 @@ bool Bing::checkNetworkConnection(const std::string& url) {
 }
 
 bool Bing::checkConnection(const std::string countrycode) {
-    std::string host = countrycode == "zh-cn" ? "https://cn.bing.com" : Bing::BingHost;
-    return checkNetworkConnection(host);
+    // std::string host = countrycode == "zh-cn" ? "https://cn.bing.com" : Bing::BingHost;
+    return checkNetworkConnection(Bing::BingHost);
 }
 
 std::string Bing::getJsonContent(const std::string& url) {
