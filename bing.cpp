@@ -25,7 +25,7 @@ bool Bing::checkNetworkConnection(const std::string& url) {
 
     curl_global_cleanup();
 
-    return (response_code == 200);
+    return (response_code == 200 || response_code == 301 || response_code == 302);
 }
 
 bool Bing::checkConnection(const std::string countrycode) {
