@@ -22,7 +22,7 @@ void updateConfig(const path configpath, const json jsonData);
 
 // Constants
 const string ProgramName = "bing-wallpaper-macos";
-const string ProgramVersion = "1.0.0";
+const string ProgramVersion = "1.0.1";
 const path ProgramDir = string(getenv("HOME")) + "/.local/" + ProgramName + "/";
 const string ConfigName = "config.json";
 
