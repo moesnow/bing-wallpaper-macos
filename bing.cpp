@@ -8,7 +8,7 @@ bool Bing::checkNetworkConnection(const std::string& url) {
     CURLcode res;
     long response_code = 0;
 
-    curl_global_init(CURL_GLOBAL_DEFAULT);
+    // curl_global_init(CURL_GLOBAL_DEFAULT);
 
     curl = curl_easy_init();
     if (curl) {
@@ -23,7 +23,7 @@ bool Bing::checkNetworkConnection(const std::string& url) {
         curl_easy_cleanup(curl);
     }
 
-    curl_global_cleanup();
+    // curl_global_cleanup();
 
     return (response_code == 200 || response_code == 301 || response_code == 302);
 }
@@ -38,7 +38,7 @@ std::string Bing::getJsonContent(const std::string& url) {
     CURLcode res;
     std::string content;
 
-    curl_global_init(CURL_GLOBAL_DEFAULT);
+    // curl_global_init(CURL_GLOBAL_DEFAULT);
 
     curl = curl_easy_init();
     if (curl) {
@@ -56,7 +56,7 @@ std::string Bing::getJsonContent(const std::string& url) {
         curl_easy_cleanup(curl);
     }
 
-    curl_global_cleanup();
+    // curl_global_cleanup();
 
     return content;
 }
