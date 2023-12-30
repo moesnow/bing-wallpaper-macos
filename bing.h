@@ -1,12 +1,7 @@
 #ifndef BING_H
 #define BING_H
 
-#include <curl/curl.h>
-
-#include <iostream>
-#include <nlohmann/json.hpp>
-
-using json = nlohmann::json;
+#include <string>
 
 class Bing {
    private:
@@ -20,10 +15,10 @@ class Bing {
    public:
     static const std::string BingHost;
     static const std::string BingPath;
-    static bool checkConnection(const std::string countrycode);
-    Bing(const std::string countrycode);
-    std::string getName() const;
-    std::string getUrl() const;
+    static bool checkConnection(const std::string& countrycode);
+    explicit Bing(const std::string& countrycode);
+    [[nodiscard]] std::string getName() const;
+    [[nodiscard]] std::string getUrl() const;
 };
 
 #endif

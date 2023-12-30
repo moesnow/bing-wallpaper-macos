@@ -1,4 +1,11 @@
 #include <wallpaper.h>
+#include <fstream>
+#include <iostream>
+#include <nlohmann/json.hpp>
+#include <curl/curl.h>
+// #include <utility>
+
+using json = nlohmann::json;
 
 RunResult Wallpaper::runShellCommand(const std::string& command) {
     RunResult result;
@@ -12,20 +19,20 @@ RunResult Wallpaper::runShellCommand(const std::string& command) {
         return result;
     }
 
-    const int bufferSize = 128;
+    constexpr int bufferSize = 128;
     char buffer[bufferSize];
     while (fgets(buffer, bufferSize, pipe) != nullptr) {
         result.text += buffer;
     }
-    int returnCode = pclose(pipe);
+    const int returnCode = pclose(pipe);
     result.ok = (returnCode == 0);
 
     return result;
 }
 
 RunResult Wallpaper::runAppleScript(const std::vector<std::string>& applescripts) {
-    std::string command = "";
-    for (std::string script : applescripts) {
+    std::string command;
+    for (const std::string& script : applescripts) {
         command += " -e '" + script + "'";
     }
     command = "osascript" + command + " 2>&1";
@@ -53,25 +60,22 @@ void Wallpaper::clearDirectory(const fs::path& filepath) {
 
 bool Wallpaper::downloadFile(const std::string& url, const fs::path& filepath) {
     create_directories(filepath.parent_path());
-    std::ifstream file(filepath);
-    if (file.good()) {
+    if (std::ifstream file(filepath); file.good()) {
         return true;
     } else {
         clearDirectory(filepath.parent_path());
     }
 
-    CURL* curl = curl_easy_init();
-    if (curl) {
+    if (CURL* curl = curl_easy_init(); curl) {
         curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
         std::string buffer;
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, downloadWriteCallback);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &buffer);
 
-        CURLcode res = curl_easy_perform(curl);
-        if (res == CURLE_OK) {
+        if (CURLcode res = curl_easy_perform(curl); res == CURLE_OK) {
             std::ofstream outputFile(filepath, std::ios::binary);
-            outputFile.write(buffer.c_str(), buffer.size());
+            outputFile.write(buffer.c_str(), static_cast<std::streamsize>(buffer.size()));
             outputFile.close();
         } else {
             std::cerr << "Failed to download file: " << curl_easy_strerror(res) << std::endl;
@@ -87,7 +91,7 @@ bool Wallpaper::downloadFile(const std::string& url, const fs::path& filepath) {
 }
 
 size_t Wallpaper::downloadWriteCallback(void* contents, size_t size, size_t nmemb, std::string* data) {
-    size_t totalSize = size * nmemb;
+    const size_t totalSize = size * nmemb;
     data->append(static_cast<char*>(contents), totalSize);
     return totalSize;
 }
@@ -107,10 +111,10 @@ std::vector<Wallpaper> Wallpaper::get() {
     set outputText to outputText & "}"
 end tell
 return outputText)delimiter";
-    RunResult result = runAppleScript({appleScript});
+    auto [ok, text] = runAppleScript({appleScript});
     std::vector<Wallpaper> wallpapers = {};
-    if (result.ok) {
-        json jsonData = json::parse(result.text);
+    if (ok) {
+        json jsonData = json::parse(text);
         for (auto it = jsonData.begin(); it != jsonData.end(); ++it) {
             wallpapers.emplace_back(it.key(), it.value());
         }
@@ -118,13 +122,13 @@ return outputText)delimiter";
     return wallpapers;
 }
 
-bool Wallpaper::set(const std::string url, const fs::path path) {
+bool Wallpaper::set(const std::string& url, const fs::path& path) {
     if (!downloadFile(url, path)) {
         std::cerr << "Failed to download wallpaper" << std::endl;
         return false;
     }
-    std::string appleScript1 = "tell application \"System Events\" to tell every desktop to set picture to \"" + path.string() + "\"";
-    std::string appleScript2 = "tell application \"System Events\" to if picture of item 1 of desktops does not contain \"" + path.string() + "\" then error";
+    std::string appleScript1 = R"(tell application "System Events" to tell every desktop to set picture to ")" + path.string() + "\"";
+    std::string appleScript2 = R"(tell application "System Events" to if picture of item 1 of desktops does not contain ")" + path.string() + "\" then error";
     return runAppleScript({appleScript1, appleScript2}).ok;
 }
 

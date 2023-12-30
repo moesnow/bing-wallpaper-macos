@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <nlohmann/json.hpp>
+#include <fstream>
 
 using namespace std;
 using namespace std::filesystem;
@@ -12,13 +13,13 @@ using json = nlohmann::json;
 // Function declarations
 void printHelp();
 void printVersion();
-void printUnknown(const string arg);
-void printSuccess(const string date);
+void printUnknown(const string& arg);
+void printSuccess(const string& date);
 string getDate();
 json getDefaultConfig();
-json getConfig(const path configpath);
-bool checkNeedRun(const json configJson);
-void updateConfig(const path configpath, const json jsonData);
+json getConfig(const path& configPath);
+bool checkNeedRun(const json& configJson);
+void updateConfig(const path& configpath, const json& jsonData);
 
 // Constants
 const string ProgramName = "bing-wallpaper-macos";
@@ -27,12 +28,11 @@ const path ProgramDir = string(getenv("HOME")) + "/.local/" + ProgramName + "/";
 const string ConfigName = "config.json";
 
 // Main function
-int main(int argc, char* argv[]) {
+int main(const int argc, char* argv[]) {
     json config = getConfig(ProgramDir / ConfigName);
 
     if (argc > 1) {
-        string arg(argv[1]);
-        if (arg == "--auto") {
+        if (const string arg(argv[1]); arg == "--auto") {
             if (!checkNeedRun(config)) {
                 return 0;
             }
@@ -53,7 +53,7 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    Bing bing(config["country_code"]);
+    const Bing bing(config["country_code"]);
 
     if (Wallpaper::set(bing.getUrl(), ProgramDir / bing.getName())) {
         printSuccess(getDate());
@@ -82,27 +82,27 @@ void printVersion() {
     cout << "Program version: " << ProgramVersion << endl;
 }
 
-void printUnknown(const string arg) {
+void printUnknown(const string& arg) {
     cout << ProgramName + ": option " << arg << " is unknown.\n"
          << ProgramName + ": try '" + ProgramName + " --help' for more information.\n";
 }
 
-void printSuccess(const string date) {
+void printSuccess(const string& date) {
     cout << "\033[0m[\033[33m" << date << "\033[0m] "
          << "\033[35mWallpaper applied successfully :)" << endl;
 }
 
 string getDate() {
     time_t rawtime;
-    struct tm* timeinfo;
-    char buffer[11];
-
     time(&rawtime);
-    timeinfo = localtime(&rawtime);
+
+    struct tm* timeinfo = localtime(&rawtime);
     mktime(timeinfo);
 
+    char buffer[11];
     strftime(buffer, sizeof(buffer), "%Y/%-m/%-d", timeinfo);
-    return string(buffer);
+
+    return {buffer};
 }
 
 json getDefaultConfig() {
@@ -113,7 +113,7 @@ json getDefaultConfig() {
     return jsonData;
 }
 
-json getConfig(const path configPath) {
+json getConfig(const path& configPath) {
     ifstream configFile(configPath);
     if (configFile.is_open()) {
         try {
@@ -137,10 +137,10 @@ json getConfig(const path configPath) {
     return getDefaultConfig();
 }
 
-bool checkNeedRun(const json configJson) {
-    bool isDateExpired = getDate() == configJson["last_update_date"] ? false : true;
+bool checkNeedRun(const json& configJson) {
+    const bool isDateExpired = getDate() != configJson["last_update_date"];
     bool isWallpaperChange = false;
-    string wallpaperName = configJson["wallpaper_name"];
+    const string wallpaperName = configJson["wallpaper_name"];
     const vector<Wallpaper> wallpapers = Wallpaper::get();
     for (const auto& wallpaper : wallpapers) {
         if (wallpaper.getPath().find(wallpaperName) == std::string::npos) {
@@ -151,10 +151,9 @@ bool checkNeedRun(const json configJson) {
     return isDateExpired || isWallpaperChange ? true : false;
 }
 
-void updateConfig(const path configpath, const json jsonData) {
+void updateConfig(const path& configpath, const json& jsonData) {
     create_directories(configpath.parent_path());
-    ofstream file(configpath);
-    if (file.is_open()) {
+    if (ofstream file(configpath); file.is_open()) {
         file << jsonData.dump(4);
         file.close();
     } else {
