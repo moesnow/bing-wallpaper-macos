@@ -1,8 +1,9 @@
 #ifndef WALLPAPER_H
 #define WALLPAPER_H
 
-#include <string>
 #include <filesystem>
+#include <string>
+#include <utility>
 
 namespace fs = std::filesystem;
 
@@ -24,7 +25,7 @@ class Wallpaper {
    public:
     static std::vector<Wallpaper> get();
     static bool set(const std::string& url, const fs::path& path);
-    Wallpaper(std::string  name, std::string  path) : name(std::move(name)), path(std::move(path)){};
+    Wallpaper(std::string name, std::string path) : name(std::move(name)), path(std::move(path)){};
     [[nodiscard]] std::string getName() const;
     [[nodiscard]] std::string getPath() const;
 };

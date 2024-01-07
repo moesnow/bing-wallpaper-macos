@@ -1,9 +1,9 @@
+#include <curl/curl.h>
 #include <wallpaper.h>
+
 #include <fstream>
 #include <iostream>
 #include <nlohmann/json.hpp>
-#include <curl/curl.h>
-// #include <utility>
 
 using json = nlohmann::json;
 
@@ -42,7 +42,7 @@ RunResult Wallpaper::runAppleScript(const std::vector<std::string>& applescripts
 void Wallpaper::clearDirectory(const fs::path& filepath) {
     std::vector<fs::path> jpgFiles;
     for (const auto& entry : fs::directory_iterator(filepath)) {
-        if (entry.is_regular_file() && entry.path().extension() == ".jpg") {
+        if (entry.is_regular_file() && entry.path().extension().string() == ".jpg") {
             jpgFiles.push_back(entry);
         }
     }
